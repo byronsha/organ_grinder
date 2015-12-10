@@ -55,7 +55,6 @@
 	    'div',
 	    null,
 	    React.createElement(Organ, null),
-	    React.createElement('br', null),
 	    React.createElement(Recorder, null)
 	  ), root);
 	});
@@ -19665,19 +19664,15 @@
 	  getInitialState: function () {
 	    return { keys: KeyStore.all() };
 	  },
-	
 	  _organChanged: function () {
 	    this.setState({ keys: KeyStore.all() });
 	  },
-	
 	  componentDidMount: function () {
 	    KeyStore.addListener(this._organChanged);
 	  },
-	
 	  componentWillUnmount: function () {
 	    KeyStore.removeListener(this._organChanged);
 	  },
-	
 	  render: function () {
 	    var tones = Object.keys(Tones);
 	    var keys = this.state.keys;
@@ -19685,10 +19680,8 @@
 	    return React.createElement(
 	      'div',
 	      null,
-	      'Notes',
 	      tones.map(function (tone, idx) {
 	        var pressed = keys.indexOf(tone) !== -1; //is tone in keys?
-	
 	        return React.createElement(Key, { key: idx, noteName: tone, pressed: pressed });
 	      })
 	    );
@@ -19719,6 +19712,11 @@
 	  KeyStore.__emitChange();
 	};
 	
+	var groupUpdate = function (keys) {
+	  _keys = keys.slice();
+	  KeyStore.__emitChange();
+	};
+	
 	KeyStore.all = function () {
 	  return _keys.slice();
 	};
@@ -19730,6 +19728,9 @@
 	      break;
 	    case "KEY_RELEASE":
 	      keyRelease(payload.key);
+	      break;
+	    case "GROUP_UPDATE":
+	      groupUpdate(payload.keys);
 	      break;
 	  }
 	};
@@ -26427,18 +26428,21 @@
 	
 	var KeyActions = {
 	  press: function (noteName) {
-	
 	    AppDispatcher.dispatch({
 	      actionType: "KEY_PRESS",
 	      key: noteName
 	    });
 	  },
-	
 	  release: function (noteName) {
-	
 	    AppDispatcher.dispatch({
 	      actionType: "KEY_RELEASE",
 	      key: noteName
+	    });
+	  },
+	  groupUpdate: function (noteNames) {
+	    AppDispatcher.dispatch({
+	      actionType: "GROUP_UPDATE",
+	      keys: noteNames
 	    });
 	  }
 	};
@@ -26452,24 +26456,45 @@
 	var KeyActions = __webpack_require__(181);
 	
 	var keyNotes = {
-	  49: "A",
-	  50: "B",
-	  51: "C",
-	  52: "D",
-	  53: "E",
-	  54: "F",
-	  55: "G"
+	  81: "C₄",
+	  50: "C₄♯",
+	  87: "D₄",
+	  51: "D₄♯",
+	  69: "E₄",
+	  82: "F₄",
+	  53: "F₄♯",
+	  84: "G₄",
+	  54: "G₄♯",
+	  89: "A₄",
+	  55: "B₄♭",
+	  85: "B₄",
+	  73: "C₅",
+	  57: "C₅♯",
+	  79: "D₅",
+	  48: "D₅♯",
+	  80: "E₅",
+	  90: "F₅",
+	  83: "F₅♯",
+	  88: "G₅",
+	  68: "G₅♯",
+	  67: "A₅",
+	  70: "B₅♭",
+	  86: "B₅",
+	  66: "C₆",
+	  72: "C₆♯",
+	  78: "D₆",
+	  74: "D₆♯",
+	  77: "E₆"
 	};
 	
 	$(document).on("keydown", function (e) {
-	
-	  if (e.keyCode < 56 && e.keyCode > 48) {
+	  if (e.keyCode <= 90 && e.keyCode >= 48) {
 	    KeyActions.press(keyNotes[e.keyCode]);
 	  }
 	});
 	
 	$(document).on("keyup", function (e) {
-	  if (e.keyCode < 56 && e.keyCode > 48) {
+	  if (e.keyCode <= 90 && e.keyCode >= 48) {
 	    KeyActions.release(keyNotes[e.keyCode]);
 	  }
 	});
@@ -26479,13 +26504,35 @@
 /***/ function(module, exports) {
 
 	var TONES = {
-	  "A": 880.0,
-	  "B": 987.77,
-	  "C": 1046.50,
-	  "D": 1174.66,
-	  "E": 1318.51,
-	  "F": 1396.91,
-	  "G": 1567.98
+	  "C₄": 261.63,
+	  "C₄♯": 277.18,
+	  "D₄": 293.66,
+	  "D₄♯": 311.13,
+	  "E₄": 329.63,
+	  "F₄": 349.23,
+	  "F₄♯": 369.99,
+	  "G₄": 392.00,
+	  "G₄♯": 415.30,
+	  "A₄": 440.00,
+	  "B₄♭": 466.16,
+	  "B₄": 493.88,
+	  "C₅": 523.25,
+	  "C₅♯": 544.37,
+	  "D₅": 587.33,
+	  "D₅♯": 622.25,
+	  "E₅": 659.25,
+	  "F₅": 698.46,
+	  "F₅♯": 739.99,
+	  "G₅": 783.99,
+	  "G₅♯": 830.61,
+	  "A₅": 880.00,
+	  "B₅♭": 932.33,
+	  "B₅": 987.77,
+	  "C₆": 1046.50,
+	  "C₆♯": 1108.73,
+	  "D₆": 1174.66,
+	  "D₆♯": 1244.51,
+	  "E₆": 1318.51
 	};
 	
 	module.exports = TONES;
@@ -26550,13 +26597,25 @@
 	  },
 	
 	  render: function () {
-	    var keyReturn,
-	        keyStyle = { float: "left" };
+	    var keyStyle = {
+	      float: "left",
+	      padding: "1px",
+	      width: "32px",
+	      outline: "1px solid",
+	      textAlign: "center"
+	    };
+	
+	    if (this.props.noteName.length === 2) {
+	      keyStyle["paddingTop"] = "140px";
+	    } else {
+	      keyStyle["paddingTop"] = "80px";
+	      keyStyle["background"] = "black";
+	      keyStyle["color"] = "white";
+	    }
 	
 	    if (this.props.pressed) {
 	      keyStyle["fontStyle"] = "bold";
-	      keyStyle["fontSize"] = "40px";
-	
+	      keyStyle["background"] = "red";
 	      this.note.start();
 	    } else {
 	      this.note.stop();
@@ -26590,18 +26649,14 @@
 	  getInitialState: function () {
 	    return { isRecording: false, track: new Track({ "name": "New Track", "roll": [] }) };
 	  },
-	
 	  _recorderChanged: function () {
 	    if (this.state.isRecording) {
 	      this.state.track.addNotes(KeyStore.all());
 	    };
-	    console.log(this.state.track.roll);
 	  },
-	
 	  componentDidMount: function () {
 	    KeyStore.addListener(this._recorderChanged);
 	  },
-	
 	  componentWillUnmount: function () {
 	    KeyStore.removeListener(this._recorderChanged);
 	  },
@@ -26610,28 +26665,58 @@
 	    this.state.track.startRecording();
 	  },
 	  stopRecording: function () {
-	    this.setState({ isRecording: false });
-	    this.state.track.stopRecording();
+	    if (this.state.isRecording) {
+	      this.setState({ isRecording: false });
+	      this.state.track.stopRecording();
+	    }
 	  },
-	
+	  playback: function () {
+	    if (!this.state.isRecording) {
+	      this.state.track.play(this.state.track.roll);
+	    }
+	  },
 	  render: function () {
+	    var recorderStyle = {
+	      fontSize: "20px",
+	      marginLeft: "5px",
+	      marginBottom: "5px"
+	    };
+	    var rollStyle = {
+	      position: "relative"
+	    };
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
 	        'button',
-	        { onClick: this.startRecording },
+	        { style: recorderStyle, onClick: this.startRecording },
 	        'Record'
 	      ),
+	      React.createElement('br', null),
 	      React.createElement(
 	        'button',
-	        { onClick: this.stopRecording },
+	        { style: recorderStyle, onClick: this.stopRecording },
 	        'Stop'
 	      ),
+	      React.createElement('br', null),
 	      React.createElement(
-	        'div',
-	        null,
-	        this.state.track.name
+	        'button',
+	        { style: recorderStyle, onClick: this.playback },
+	        'Playback'
+	      ),
+	      React.createElement('br', null),
+	      React.createElement(
+	        'ul',
+	        { style: rollStyle },
+	        this.state.track.roll.map(function (element, idx) {
+	          return React.createElement(
+	            'li',
+	            null,
+	            element.timeSlice,
+	            ': ',
+	            element.notes
+	          );
+	        })
 	      )
 	    );
 	  }
@@ -26644,6 +26729,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var KeyStore = __webpack_require__(160);
+	var KeyActions = __webpack_require__(181);
 	
 	var Track = function (attributes) {
 	  this.name = attributes.name;
@@ -26666,9 +26752,31 @@
 	  this.addNotes([]);
 	};
 	
-	// Track.prototype.play = function (roll) {
-	//   // body...
-	// };
+	Track.prototype.play = function () {
+	  console.log(this.roll);
+	  if (this.interval) {
+	    return;
+	  }
+	
+	  var playbackStartTime = Date.now();
+	  var currentNote = 0;
+	  var delta;
+	
+	  this.interval = setInterval((function () {
+	    if (currentNote < this.roll.length) {
+	      delta = Date.now() - playbackStartTime;
+	
+	      if (delta >= this.roll[currentNote].timeSlice) {
+	        var notes = this.roll[currentNote].notes || [];
+	        KeyActions.groupUpdate(notes);
+	        currentNote++;
+	      }
+	    } else {
+	      clearInterval(this.interval);
+	      delete this.interval;
+	    }
+	  }).bind(this), 1);
+	};
 	
 	module.exports = Track;
 

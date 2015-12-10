@@ -11,14 +11,25 @@ var Key = React.createClass({
   },
 
   render: function(){
-    var keyReturn,
-        keyStyle = { float: "left" };
+    var keyStyle = {
+      float: "left",
+      padding: "1px",
+      width: "32px",
+      outline: "1px solid",
+      textAlign: "center"
+    };
 
+    if (this.props.noteName.length === 2) {
+      keyStyle["paddingTop"] = "140px";
+    } else {
+      keyStyle["paddingTop"] = "80px";
+      keyStyle["background"] = "black";
+      keyStyle["color"] = "white";
+    }
 
     if (this.props.pressed) {
       keyStyle["fontStyle"] = "bold";
-      keyStyle["fontSize"] = "40px";
-
+      keyStyle["background"] = "red";
       this.note.start();
     } else {
       this.note.stop();
@@ -31,6 +42,5 @@ var Key = React.createClass({
     );
   }
 });
-
 
 module.exports = Key;

@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
   ReactDOM.render(
     <div>
       <Organ/>
-      <br/>
       <Recorder/>
     </div>,
   root);
