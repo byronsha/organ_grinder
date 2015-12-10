@@ -47,10 +47,17 @@
 	var ReactDOM = __webpack_require__(1);
 	var React = __webpack_require__(147);
 	var Organ = __webpack_require__(159);
+	var Recorder = __webpack_require__(186);
 	
 	document.addEventListener("DOMContentLoaded", function () {
 	  var root = document.querySelector('#root');
-	  ReactDOM.render(React.createElement(Organ, null), root);
+	  ReactDOM.render(React.createElement(
+	    'div',
+	    null,
+	    React.createElement(Organ, null),
+	    React.createElement('br', null),
+	    React.createElement(Recorder, null)
+	  ), root);
 	});
 
 /***/ },
@@ -26568,6 +26575,102 @@
 	});
 	
 	module.exports = Key;
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(147),
+	    KeyStore = __webpack_require__(160),
+	    Track = __webpack_require__(187);
+	
+	var Recorder = React.createClass({
+	  displayName: 'Recorder',
+	
+	  getInitialState: function () {
+	    return { isRecording: false, track: new Track({ "name": "New Track", "roll": [] }) };
+	  },
+	
+	  _recorderChanged: function () {
+	    if (this.state.isRecording) {
+	      this.state.track.addNotes(KeyStore.all());
+	    };
+	    console.log(this.state.track.roll);
+	  },
+	
+	  componentDidMount: function () {
+	    KeyStore.addListener(this._recorderChanged);
+	  },
+	
+	  componentWillUnmount: function () {
+	    KeyStore.removeListener(this._recorderChanged);
+	  },
+	  startRecording: function () {
+	    this.setState({ isRecording: true });
+	    this.state.track.startRecording();
+	  },
+	  stopRecording: function () {
+	    this.setState({ isRecording: false });
+	    this.state.track.stopRecording();
+	  },
+	
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'button',
+	        { onClick: this.startRecording },
+	        'Record'
+	      ),
+	      React.createElement(
+	        'button',
+	        { onClick: this.stopRecording },
+	        'Stop'
+	      ),
+	      React.createElement(
+	        'div',
+	        null,
+	        this.state.track.name
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = Recorder;
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var KeyStore = __webpack_require__(160);
+	
+	var Track = function (attributes) {
+	  this.name = attributes.name;
+	  this.roll = attributes.roll;
+	};
+	
+	Track.prototype.startRecording = function () {
+	  this.roll = [];
+	  this.startTime = new Date();
+	};
+	
+	Track.prototype.addNotes = function (notes) {
+	  var newTime = new Date();
+	
+	  var noteTime = newTime - this.startTime;
+	  this.roll.push({ "timeSlice": noteTime, "notes": notes });
+	};
+	
+	Track.prototype.stopRecording = function () {
+	  this.addNotes([]);
+	};
+	
+	// Track.prototype.play = function (roll) {
+	//   // body...
+	// };
+	
+	module.exports = Track;
 
 /***/ }
 /******/ ]);

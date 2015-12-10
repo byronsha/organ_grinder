@@ -11,12 +11,10 @@ var keyPress = function (key) {
   }
 };
 
-
 var keyRelease = function (key) {
   _keys.splice(_keys.indexOf(key), 1);
   KeyStore.__emitChange();
 };
-
 
 KeyStore.all = function(){
   return _keys.slice();
